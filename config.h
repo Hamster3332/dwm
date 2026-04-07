@@ -45,6 +45,7 @@ static const Rule rules[] = {
     { "Gimp",     NULL,       NULL,       0,            1,           -1 },
     { "firefox",  NULL,       NULL,       1 << 2,       0,           -1 },
     { "discord",  NULL,       NULL,       1 << 3,       0,           -1 },
+    { NULL,       NULL,       "win[0-9]+",0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -97,7 +98,7 @@ static const char *roficmd[]    = { "rofi", "-show", "drun", "-theme", "~/.confi
 static const Key keys[] = {
     /* modifier                     key            function        argument */
     { MODKEY,                       XK_p,          spawn,          { .v = dmenucmd } },
-    { MODKEY,                       XK_r,          spawn,          { .v = roficmd } },
+    { MODKEY,                       XK_space,      spawn,          { .v = roficmd } },
     { MODKEY,                       XK_Return,     spawn,          { .v = termcmd } },
     { MODKEY,                       XK_w,          spawn,          { .v = browsercmd } },
     { MODKEY,                       XK_b,          togglebar,      { 0 } },
@@ -116,12 +117,12 @@ static const Key keys[] = {
     { MODKEY,                       XK_Tab,        view,           { 0 } },
     { 0,                            XK_Print,      spawn,          SHCMD("flameshot gui -r | xclip -selection clipboard -t image/png") },
     { MODKEY|ShiftMask,             XK_c,          killclient,     { 0 } },
-    { MODKEY,                       XK_t,          setlayout,      { .v = &layouts[0] } },
-    { MODKEY,                       XK_m,          setlayout,      { .v = &layouts[1] } },
-    { MODKEY,                       XK_r,          setlayout,      { .v = &layouts[2] } },
-    { MODKEY|ShiftMask,             XK_r,          setlayout,      { .v = &layouts[3] } },
-    { MODKEY,                       XK_g,          setlayout,      { .v = &layouts[4] } },
-    { MODKEY,                       XK_f,          setlayout,      { .v = &layouts[5] } },
+    { MODKEY,                       XK_t,          setlayout,      { .v = &layouts[0] } }, // tiling
+    { MODKEY,                       XK_m,          setlayout,      { .v = &layouts[1] } }, // monocle
+    { MODKEY,                       XK_r,          setlayout,      { .v = &layouts[2] } }, // spiral
+    { MODKEY|ShiftMask,             XK_r,          setlayout,      { .v = &layouts[3] } }, // dwindle
+    { MODKEY,                       XK_g,          setlayout,      { .v = &layouts[4] } }, // gaplessgrid
+    { MODKEY,                       XK_f,          setlayout,      { .v = &layouts[5] } }, // floating
     { MODKEY|ShiftMask,             XK_space,      togglefloating, { 0 } },
     { MODKEY,                       XK_0,          view,           { .ui = ~0 } },
     { MODKEY|ShiftMask,             XK_0,          tag,            { .ui = ~0 } },
