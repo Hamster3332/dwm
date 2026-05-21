@@ -44,7 +44,8 @@ static const Rule rules[] = {
     /* class      instance    title       tags mask     isfloating   monitor */
     { "Gimp",     NULL,       NULL,       0,            1,           -1 },
     { "firefox",  NULL,       NULL,       1 << 2,       0,           -1 },
-    { "discord",  NULL,       NULL,       1 << 3,       0,           -1 },
+    { "vesktop",  NULL,       NULL,       1 << 3,       0,           -1 },
+    { "steam",    NULL,       NULL,       1 << 4,       0,           -1 },
     { NULL,       NULL,       "win[0-9]+",0,            1,           -1 },
 };
 
@@ -91,9 +92,19 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[]   = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_green1, "-sf", col_gray4, NULL };
-static const char *termcmd[]    = { "alacritty", NULL };
+static const char *termcmd[]    = { "st", NULL };
 static const char *browsercmd[] = { "firefox", NULL };
 static const char *roficmd[]    = { "rofi", "-show", "drun", "-theme", "~/.config/rofi/config.rasi", NULL };
+
+static const char *keepassxccmd[] = {"keepassxc", NULL};
+static const char *emacscmd[] = {"emacs", NULL};
+
+Autostarttag autostarttaglist[] = {
+	{.cmd = browsercmd, .tags = 1 << 2 },
+	{.cmd = keepassxccmd, .tags = 1 << 6 },
+	{.cmd = emacscmd, .tags = 0 },
+	{.cmd = NULL, .tags = 0 },
+};
 
 static const Key keys[] = {
     /* modifier                     key            function        argument */
@@ -130,6 +141,8 @@ static const Key keys[] = {
     { MODKEY,                       XK_period,     focusmon,       { .i = +1 } },
     { MODKEY|ShiftMask,             XK_comma,      tagmon,         { .i = -1 } },
     { MODKEY|ShiftMask,             XK_period,     tagmon,         { .i = +1 } },
+    { MODKEY,                       XK_F1,         spawn,          SHCMD("setxkbmap us") },
+    { MODKEY,                       XK_F2,         spawn,          SHCMD("setxkbmap de") },
     TAGKEYS( XK_1, 0 )
     TAGKEYS( XK_2, 1 )
     TAGKEYS( XK_3, 2 )

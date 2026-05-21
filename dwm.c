@@ -20,14 +20,12 @@
  *
  * To understand everything else, start reading main().
  */
-// clang-format off
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
-#include <errno.h>
 #include <locale.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -37,12 +35,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <regex.h>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 #include <X11/Xft/Xft.h>
-
-#include <regex.h>
 
 #include "drw.h"
 #include "util.h"
@@ -177,6 +174,11 @@ typedef struct {
     int monitor;
 } Rule;
 
+typedef struct {
+	const char **cmd;
+	unsigned int tags;
+} Autostarttag;
+
 /* function declarations */
 static void applyrules(Client *c);
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h,
@@ -244,6 +246,8 @@ static void setup(void);
 static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
 static void spawn(const Arg *arg);
+static void autostarttagsspawner(void);
+static void applyautostarttags(Client *c);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void togglebar(const Arg *arg);
@@ -306,6 +310,9 @@ static Display *dpy;
 static Drw *drw;
 static Monitor *mons, *selmon;
 static Window root, wmcheckwin;
+static unsigned int autostarttags = 0;
+static int autostartcomplete = 0;
+static int autostartcmdscomplete = 0;
 static int useargb = 0;
 static Visual *visual;
 static int depth;
@@ -330,16 +337,18 @@ struct NumTags {
     char limitexceeded[LENGTH(tags) > 31 ? -1 : 1];
 };
 
-static int matchrule(const char *pattern, const char *str) {
-    if (!pattern) return 1;
+/* applying extended regex to string */
+int applyregex(const char *str, const char *pattern) {
     regex_t re;
-    int match;
-    if (regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB) != 0)
-        return strstr(str, pattern) != NULL;
-    match = regexec(&re, str, 0, NULL, 0) == 0;
+    int res = regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB);
+    if (res != 0) return strstr(str, pattern) != NULL;
+
+    res = regexec(&re, str, 0, NULL, 0);
     regfree(&re);
-    return match;
+
+    return !res;
 }
+
 /* function implementations */
 void applyrules(Client *c) {
     const char *class, *instance;
@@ -357,11 +366,13 @@ void applyrules(Client *c) {
 
     for (i = 0; i < LENGTH(rules); i++) {
         r = &rules[i];
-        if (matchrule(r->title,    c->name) &&
-            matchrule(r->class,    class)   &&
-            matchrule(r->instance, instance)) {
+        if ((!r->title || applyregex(c->name, r->title))
+	    && (!r->class || applyregex(class, r->class))
+		&& (!r->instance || applyregex(instance, r->instance)))
+        {
             c->isfloating = r->isfloating;
             c->tags |= r->tags;
+
             for (m = mons; m && m->num != r->monitor; m = m->next)
                 ;
             if (m)
@@ -1097,7 +1108,11 @@ void manage(Window w, XWindowAttributes *wa) {
         c->tags = t->tags;
     } else {
         c->mon = selmon;
-        applyrules(c);
+        if (autostarttags) {
+            applyautostarttags(c);
+        } else {
+            applyrules(c);
+        }
     }
 
     if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
@@ -1423,9 +1438,12 @@ void run(void) {
     XEvent ev;
     /* main event loop */
     XSync(dpy, False);
-    while (running && !XNextEvent(dpy, &ev))
+    while (running && !XNextEvent(dpy, &ev)) {
+        if (!(autostartcomplete || autostarttags))
+            autostarttagsspawner();
         if (handler[ev.type])
             handler[ev.type](&ev); /* call handler */
+    }
 }
 
 void scan(void) {
@@ -1699,6 +1717,33 @@ void tag(const Arg *arg) {
         arrange(selmon);
     }
 }
+void
+autostarttagsspawner(void)
+{
+	int i;
+	Arg arg;
+
+	for (i = autostartcmdscomplete; i < LENGTH(autostarttaglist) ; i++){
+		autostartcmdscomplete += 1;
+		autostarttags = autostarttaglist[i].tags;
+		arg.v = autostarttaglist[i].cmd ;
+		spawn(&arg);
+		return;
+	}
+	autostartcomplete = 1;
+	return;
+}
+
+void
+applyautostarttags(Client *c)
+{
+	if (!c)
+		return;
+	c->tags = autostarttags;
+	autostarttags = 0;
+	return;
+}
+
 
 void tagmon(const Arg *arg) {
     if (!selmon->sel || !mons->next)
