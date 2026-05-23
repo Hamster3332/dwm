@@ -17,20 +17,52 @@ static const char dmenufont[]       = "JetBrainsMono Nerd Font Mono:style=Bold:s
 
 static unsigned int baralpha    = 0x70;
 static unsigned int borderalpha = OPAQUE;
+static const char dark0_hard[]      = "#1D2021";
+static const char dark0[]           = "#282828";
+static const char dark0_soft[]      = "#32302F";
+static const char dark1[]           = "#3c3836";
+static const char dark2[]           = "#504945";
+static const char dark3[]           = "#665C54";
+static const char dark4[]           = "#7C6F64";
 
-static const char col_gray1[]  = "#222222";
-static const char col_gray2[]  = "#444444";
-static const char col_gray3[]  = "#bbbbbb";
-static const char col_gray4[]  = "#eeeeee";
-static const char col_cyan[]   = "#005577";
-static const char col_orange[] = "#de935f";
-static const char col_lime[]   = "#b5bd67";
-static const char col_green2[] = "#8c9440";
-static const char col_green1[] = "#3c4019";
+static const char gray_245[]        = "#928374";
+static const char gray_244[]        = "#928374";
+
+static const char light0_hard[]     = "#F9F5D7";
+static const char light0[]          = "#FBF1C7";
+static const char light0_soft[]     = "#F2E5BC";
+static const char light1[]          = "#EBDBB2";
+static const char light2[]          = "#D5C4A1";
+static const char light3[]          = "#BDAE93";
+static const char light4[]          = "#A89984";
+
+static const char bright_red[]      = "#FB4934";
+static const char bright_green[]    = "#B8BB26";
+static const char bright_yellow[]   = "#FABD2F";
+static const char bright_blue[]     = "#83A598";
+static const char bright_purple[]   = "#D3869B";
+static const char bright_aqua[]     = "#8EC07C";
+static const char bright_orange[]   = "#FE8019";
+
+static const char neutral_red[]     = "#CC241D";
+static const char neutral_green[]   = "#98971A";
+static const char neutral_yellow[]  = "#D79921";
+static const char neutral_blue[]    = "#458588";
+static const char neutral_purple[]  = "#B16286";
+static const char neutral_aqua[]    = "#689D6A";
+static const char neutral_orange[]  = "#D65D0E";
+
+static const char faded_red[]       = "#9D0006";
+static const char faded_green[]     = "#79740E";
+static const char faded_yellow[]    = "#B57614";
+static const char faded_blue[]      = "#076678";
+static const char faded_purple[]    = "#8F3F71";
+static const char faded_aqua[]      = "#427B58";
+static const char faded_orange[]    = "#AF3A03";
 static const char *colors[][3] = {
-    /*               fg         bg         border   */
-    [SchemeNorm] = { col_gray3, col_gray1, col_gray2  },
-    [SchemeSel]  = { col_gray4, col_green1, col_green2 },
+    /*               fg                 bg            border   */
+    [SchemeNorm] = { light1,            dark1,        dark1          },
+    [SchemeSel]  = { bright_blue,      dark0,        bright_green },
 };
 
 /* tagging */
@@ -92,7 +124,16 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[]   = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_green1, "-sf", col_gray4, NULL };
+static const char *dmenucmd[] = {
+    "dmenu_run",
+    "-m", dmenumon,
+    "-fn", dmenufont,
+    "-nb", dark0,          /* normal background  */
+    "-nf", gray_245,       /* normal foreground  */
+    "-sb", bright_green,   /* selected background */
+    "-sf", light4,         /* selected foreground */
+    NULL
+};
 static const char *termcmd[]    = { "st", NULL };
 static const char *browsercmd[] = { "firefox", NULL };
 static const char *roficmd[]    = { "rofi", "-show", "drun", "-theme", "~/.config/rofi/config.rasi", NULL };

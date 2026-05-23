@@ -1,2 +1,4 @@
-dwm 	# compiled binary
-*.o	# object files
+dwm
+*.o
+.clangd
+compile_commands.json
