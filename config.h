@@ -15,7 +15,7 @@ static const int topbar             = 1;   /* 0 means bottom bar */
 static const char *fonts[]          = { "JetBrainsMono Nerd Font Mono:style=Bold:size=14" };
 static const char dmenufont[]       = "JetBrainsMono Nerd Font Mono:style=Bold:size=14";
 
-static unsigned int baralpha    = 0x70;
+static unsigned int baralpha    = 0x60;
 static unsigned int borderalpha = OPAQUE;
 static const char dark0_hard[]      = "#1D2021";
 static const char dark0[]           = "#282828";
@@ -61,7 +61,7 @@ static const char faded_aqua[]      = "#427B58";
 static const char faded_orange[]    = "#AF3A03";
 static const char *colors[][3] = {
     /*               fg                 bg            border   */
-    [SchemeNorm] = { light1,            dark1,        dark1          },
+    [SchemeNorm] = { light1,           dark1,        dark1        },
     [SchemeSel]  = { bright_blue,      dark0,        bright_green },
 };
 
@@ -79,6 +79,7 @@ static const Rule rules[] = {
     { "steam",    NULL,       NULL,       1 << 4,       0,           -1 },
     { "telegram", NULL,       NULL,       1 << 7,       0,           -1 },
     { "signal",   NULL,       NULL,       1 << 7,       0,           -1 },
+    { "feh",      NULL,       NULL,       0,            1,           -1 },
     { NULL,       NULL,       "win[0-9]+",0,            1,           -1 },
 };
 
@@ -88,6 +89,8 @@ static const int nmaster            = 1;    /* number of clients in master area 
 static const int resizehints        = 1;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen     = 1;    /* 1 will force focus on the fullscreen window */
 static const int refreshrate        = 165;  /* refresh rate (per second) for client move/resize */
+
+#define STATUSBAR "dwmblocks"
 
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 #include "vanitygaps.c"
@@ -136,59 +139,63 @@ static const char *dmenucmd[] = {
 };
 static const char *termcmd[]    = { "st", NULL };
 static const char *browsercmd[] = { "firefox", NULL };
+static const char *concordcmd[] = { "concord", NULL };
 static const char *roficmd[]    = { "rofi", "-show", "drun", "-theme", "~/.config/rofi/config.rasi", NULL };
 
 static const char *keepassxccmd[] = {"keepassxc", NULL};
 static const char *emacscmd[] = {"emacs", NULL};
 static const char *signalcmd[] = {"signal-desktop", NULL};
 static const char *telegramcmd[] = {"telegram", NULL};
+static const char *dwmblockscmd[] = {"dwmblocks", NULL};
 
 Autostarttag autostarttaglist[] = {
+	{.cmd = emacscmd, .tags = 1 << 0 },
 	{.cmd = browsercmd, .tags = 1 << 2 },
 	{.cmd = keepassxccmd, .tags = 1 << 6 },
-	{.cmd = emacscmd, .tags = 1 << 0 },
-	{.cmd = signalcmd, .tags = 1 << 7 },
-	{.cmd = telegramcmd, .tags = 1 << 7 },
+	{.cmd = dwmblockscmd, .tags = 0 },
 	{.cmd = NULL, .tags = 0 },
 };
 
 static const Key keys[] = {
-    /* modifier                     key            function        argument */
-    { MODKEY,                       XK_p,          spawn,          { .v = dmenucmd } },
-    { MODKEY,                       XK_space,      spawn,          { .v = roficmd } },
-    { MODKEY,                       XK_Return,     spawn,          { .v = termcmd } },
-    { MODKEY,                       XK_w,          spawn,          { .v = browsercmd } },
-    { MODKEY,                       XK_b,          togglebar,      { 0 } },
-    { MODKEY,                       XK_j,          focusstack,     { .i = +1 } },
-    { MODKEY,                       XK_k,          focusstack,     { .i = -1 } },
-    { MODKEY,                       XK_i,          incnmaster,     { .i = +1 } },
-    { MODKEY,                       XK_d,          incnmaster,     { .i = -1 } },
-    { MODKEY,                       XK_h,          setmfact,       { .f = -0.05 } },
-    { MODKEY,                       XK_l,          setmfact,       { .f = +0.05 } },
-    { MODKEY,                       XK_z,          zoom,           { 0 } },
-    { MODKEY,                       XK_u,          incrgaps,       { .i = +2 } },
-    { MODKEY|ShiftMask,             XK_u,          incrgaps,       { .i = -2 } },
-    { MODKEY|ShiftMask,             XK_f,          togglefullscr,  { 0 } },
-    { MODKEY,                       XK_o,          togglegaps,     { 0 } },
-    { MODKEY|ShiftMask,             XK_o,          defaultgaps,    { 0 } },
-    { MODKEY,                       XK_Tab,        view,           { 0 } },
-    { 0,                            XK_Print,      spawn,          SHCMD("flameshot gui -r | xclip -selection clipboard -t image/png") },
-    { MODKEY|ShiftMask,             XK_c,          killclient,     { 0 } },
-    { MODKEY,                       XK_t,          setlayout,      { .v = &layouts[0] } }, // tiling
-    { MODKEY,                       XK_m,          setlayout,      { .v = &layouts[1] } }, // monocle
-    { MODKEY,                       XK_r,          setlayout,      { .v = &layouts[2] } }, // spiral
-    { MODKEY|ShiftMask,             XK_r,          setlayout,      { .v = &layouts[3] } }, // dwindle
-    { MODKEY,                       XK_g,          setlayout,      { .v = &layouts[4] } }, // gaplessgrid
-    { MODKEY,                       XK_f,          setlayout,      { .v = &layouts[5] } }, // floating
-    { MODKEY|ShiftMask,             XK_space,      togglefloating, { 0 } },
-    { MODKEY,                       XK_0,          view,           { .ui = ~0 } },
-    { MODKEY|ShiftMask,             XK_0,          tag,            { .ui = ~0 } },
-    { MODKEY,                       XK_comma,      focusmon,       { .i = -1 } },
-    { MODKEY,                       XK_period,     focusmon,       { .i = +1 } },
-    { MODKEY|ShiftMask,             XK_comma,      tagmon,         { .i = -1 } },
-    { MODKEY|ShiftMask,             XK_period,     tagmon,         { .i = +1 } },
-    { MODKEY,                       XK_F1,         spawn,          SHCMD("setxkbmap us") },
-    { MODKEY,                       XK_F2,         spawn,          SHCMD("setxkbmap de") },
+    /* modifier          key                function         argument */
+    { MODKEY,            XK_p,              spawn,           { .v = dmenucmd } },
+    { MODKEY,            XK_space,          spawn,           { .v = roficmd } },
+    { MODKEY,            XK_Return,         spawn,           { .v = termcmd } },
+    { MODKEY,            XK_w,              spawn,           { .v = browsercmd } },
+    { MODKEY,            XK_b,              togglebar,       { 0 } },
+    { MODKEY,            XK_j,              focusstack,      { .i = +1 } },
+    { MODKEY,            XK_k,              focusstack,      { .i = -1 } },
+    { MODKEY,            XK_i,              incnmaster,      { .i = +1 } },
+    { MODKEY,            XK_d,              incnmaster,      { .i = -1 } },
+    { MODKEY,            XK_h,              setmfact,        { .f = -0.05 } },
+    { MODKEY,            XK_l,              setmfact,        { .f = +0.05 } },
+    { MODKEY,            XK_z,              zoom,            { 0 } },
+    { MODKEY,            XK_u,              incrgaps,        { .i = +2 } },
+    { MODKEY|ShiftMask,  XK_u,              incrgaps,        { .i = -2 } },
+    { MODKEY|ShiftMask,  XK_f,              togglefullscr,   { 0 } },
+    { MODKEY,            XK_o,              togglegaps,      { 0 } },
+    { MODKEY|ShiftMask,  XK_o,              defaultgaps,     { 0 } },
+    { MODKEY,            XK_Tab,            view,            { 0 } },
+    { 0,                 XK_Print,          spawn,           SHCMD("scrot -q 100 -z -o -s -f -F /tmp/scrot.png && xclip -selection clipboard -t image/png -i /tmp/scrot.png") },
+    { 0,                 XF86XK_AudioPlay,  spawn,           SHCMD("playerctl play-pause") },
+    { 0,                 XF86XK_AudioNext,  spawn,           SHCMD("playerctl next") },
+    { 0,                 XF86XK_AudioPrev,  spawn,           SHCMD("playerctl previous") },
+    { MODKEY|ShiftMask,  XK_c,              killclient,      { 0 } },
+    { MODKEY,            XK_t,              setlayout,       { .v = &layouts[0] } },  // tiling
+    { MODKEY,            XK_m,              setlayout,       { .v = &layouts[1] } },  // monocle
+    { MODKEY,            XK_r,              setlayout,       { .v = &layouts[2] } },  // spiral
+    { MODKEY|ShiftMask,  XK_r,              setlayout,       { .v = &layouts[3] } },  // dwindle
+    { MODKEY,            XK_g,              setlayout,       { .v = &layouts[4] } },  // gaplessgrid
+    { MODKEY,            XK_f,              setlayout,       { .v = &layouts[5] } },  // floating
+    { MODKEY|ShiftMask,  XK_space,          togglefloating,  { 0 } },
+    { MODKEY,            XK_0,              view,            { .ui = ~0 } },
+    { MODKEY|ShiftMask,  XK_0,              tag,             { .ui = ~0 } },
+    { MODKEY,            XK_comma,          focusmon,        { .i = -1 } },
+    { MODKEY,            XK_period,         focusmon,        { .i = +1 } },
+    { MODKEY|ShiftMask,  XK_comma,          tagmon,          { .i = -1 } },
+    { MODKEY|ShiftMask,  XK_period,         tagmon,          { .i = +1 } },
+    { MODKEY,            XK_F1,             spawn,           SHCMD("setxkbmap us") },
+    { MODKEY,            XK_F2,             spawn,           SHCMD("setxkbmap de") },
     TAGKEYS( XK_1, 0 )
     TAGKEYS( XK_2, 1 )
     TAGKEYS( XK_3, 2 )
@@ -208,7 +215,17 @@ static const Button buttons[] = {
     { ClkLtSymbol,          0,              Button1,        setlayout,      { 0 } },
     { ClkLtSymbol,          0,              Button3,        setlayout,      { .v = &layouts[2] } },
     { ClkWinTitle,          0,              Button2,        zoom,           { 0 } },
-    { ClkStatusText,        0,              Button2,        spawn,          { .v = termcmd } },
+    
+    { ClkStatusText,        0,              Button1,        sigstatusbar,   {.i = 1} },
+    { ClkStatusText,        0,              Button2,        sigstatusbar,   {.i = 2} },
+    { ClkStatusText,        0,              Button3,        sigstatusbar,   {.i = 3} },
+    { ClkStatusText,        0,              Button4,        sigstatusbar,   {.i = 4} },
+    { ClkStatusText,        0,              Button5,        sigstatusbar,   {.i = 5} },
+    { ClkStatusText,        0,              6,              sigstatusbar,   {.i = 6} },
+    { ClkStatusText,        0,              7,              sigstatusbar,   {.i = 7} },
+    { ClkStatusText,        0,              8,              sigstatusbar,   {.i = 8} },
+    { ClkStatusText,        0,              9,              sigstatusbar,   {.i = 9} },
+    
     { ClkClientWin,         MODKEY,         Button1,        movemouse,      { 0 } },
     { ClkClientWin,         MODKEY,         Button2,        togglefloating, { 0 } },
     { ClkClientWin,         MODKEY,         Button3,        resizemouse,    { 0 } },
